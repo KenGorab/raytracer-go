@@ -7,6 +7,7 @@ import (
 	"kenrg.co/rayz/primitives"
 	"math"
 	"math/rand"
+	"time"
 )
 
 const (
@@ -19,13 +20,6 @@ const (
 var (
 	white = primitives.Vector{1, 1, 1}
 	blue = primitives.Vector{0.5, 0.7, 1}
-
-	camera = primitives.NewCamera()
-
-	sphere = primitives.Sphere{Center: primitives.Vector{0, 0, -1}, Radius: 0.5}
-	floor = primitives.Sphere{Center: primitives.Vector{0, -100.5, -1}, Radius: 100}
-
-	world = primitives.World{[]primitives.Hittable{&sphere, &floor}}
 )
 
 func check(e error, s string) {
@@ -35,51 +29,100 @@ func check(e error, s string) {
 	}
 }
 
-func color(r *primitives.Ray, h primitives.Hittable) primitives.Vector {
-	hit, record := h.Hit(r, 0.0, math.MaxFloat64)
+func color(r primitives.Ray, world primitives.Hittable, depth int) primitives.Vector {
+	hit, record := world.Hit(r, 0.001, math.MaxFloat64)
 
 	if hit {
-		return record.Normal.AddScalar(1.0).MultiplyScalar(0.5)
+		if depth < 50 {
+			bounced, bouncedRay := record.Bounce(r, record)
+			if bounced {
+				newColor := color(bouncedRay, world, depth + 1)
+				return record.Material.Color().Multiply(newColor)
+			}
+		}
+
+		return primitives.Vector{}
 	}
 
-	unitDirection := r.Direction.Normalize()
-	return gradient(&unitDirection)
+	return gradient(r)
 }
 
-func gradient(v *primitives.Vector) primitives.Vector {
+func gradient(r primitives.Ray) primitives.Vector {
+	v := r.Direction.Normalize()
 	t := 0.5 * (v.Y + 1.0)
 	return white.MultiplyScalar(1.0 - t).Add(blue.MultiplyScalar(t))
 }
 
-func main() {
+func createFile() *os.File {
 	f, err := os.Create("out.ppm")
-	defer f.Close()
 	check(err, "Error opening file: %v\n")
 
 	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
 	check(err, "Error writing to file: %v\n")
+	return f
+}
+
+func writePixel(f *os.File, rgb primitives.Vector) {
+	ir := int(c * math.Sqrt(rgb.X))
+	ig := int(c * math.Sqrt(rgb.Y))
+	ib := int(c * math.Sqrt(rgb.Z))
+
+	_, err := fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
+	check(err, "Error writing point to file: %v\n")
+}
+
+func sample(world *primitives.World, camera *primitives.Camera, i int, j int) primitives.Vector {
+	rgb := primitives.Vector{}
+
+	for s := 0; s < numSamples; s++ {
+		u := (float64(i) + rand.Float64()) / float64(nx)
+		v := (float64(j) + rand.Float64()) / float64(ny)
+
+		r := camera.RayAt(u, v)
+		rgb = rgb.Add(color(r, world, 0))
+	}
+
+	return rgb.DivideScalar(float64(numSamples))
+}
+
+func render(world *primitives.World, camera *primitives.Camera) {
+	f := createFile()
+	defer f.Close()
+
+	ticker := time.NewTicker(time.Millisecond * 100)
+	go func() {
+		for {
+			<-ticker.C
+			fmt.Print(".")
+		}
+	}()
+
+	start := time.Now()
 
 	for j := ny - 1; j >= 0; j-- {
 		for i := 0; i < nx; i++ {
-			rgb := primitives.Vector{}
-
-			for s := 0; s < numSamples; s++ {
-				u := (float64(i) + rand.Float64()) / float64(nx)
-				v := (float64(j) + rand.Float64()) / float64(ny)
-
-				r := camera.RayAt(u, v)
-				color := color(&r, &world)
-				rgb = rgb.Add(color)
-			}
-
-			rgb = rgb.DivideScalar(float64(numSamples))
-
-			ir := int(c * rgb.X)
-			ig := int(c * rgb.Y)
-			ib := int(c * rgb.Z)
-
-			_, err = fmt.Fprintf(f, "%d %d %d\n", ir, ig, ib)
-			check(err, "Error writing point to file: %v\n")
+			rgb := sample(world, camera, i, j)
+			writePixel(f, rgb)
 		}
 	}
+
+	ticker.Stop()
+	fmt.Printf("\nDone.\nElapsed: %v\n", time.Since(start))
+}
+
+func main() {
+	camera := primitives.NewCamera()
+
+	sphere := primitives.Sphere{Center: primitives.Vector{0, 0, -1}, Radius: 0.5, Material: primitives.Lambertian{primitives.Vector{0.8, 0.3, 0.3}}}
+	floor := primitives.Sphere{Center: primitives.Vector{0, -100.5, -1}, Radius: 100, Material: primitives.Lambertian{primitives.Vector{0.8, 0.8, 0.0}}}
+	left := primitives.Sphere{Center: primitives.Vector{-1, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.8, 0.8}, 0.0}}
+	right := primitives.Sphere{Center: primitives.Vector{1, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.6, 0.2}, 0.3}}
+
+	world := primitives.World{}
+	world.Add(&sphere)
+	world.Add(&floor)
+	world.Add(&left)
+	world.Add(&right)
+
+	render(&world, &camera)
 }

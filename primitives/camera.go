@@ -4,8 +4,8 @@ type Camera struct {
 	lowerLeft, horizontal, vertical, origin Vector
 }
 
-func NewCamera() *Camera {
-	c := new(Camera)
+func NewCamera() Camera {
+	c := Camera{}
 
 	c.lowerLeft = Vector{-2.0, -1.0, -1.0}
 	c.horizontal = Vector{4.0, 0.0, 0.0}

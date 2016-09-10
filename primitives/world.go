@@ -1,15 +1,19 @@
 package primitives
 
 type World struct {
-	Elements []Hittable
+	elements []Hittable
 }
 
-func (w *World) Hit(r *Ray, tMin float64, tMax float64) (bool, HitRecord) {
+func (w *World) Add(h Hittable) {
+	w.elements = append(w.elements, h)
+}
+
+func (w *World) Hit(r Ray, tMin float64, tMax float64) (bool, HitRecord) {
 	hitAnything := false
 	closest := tMax
 	record := HitRecord{}
 
-	for _, element := range w.Elements {
+	for _, element := range w.elements {
 		hit, rec := element.Hit(r, tMin, closest)
 
 		if hit {
