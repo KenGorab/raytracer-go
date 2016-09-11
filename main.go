@@ -3,17 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
-
 	"kenrg.co/rayz/primitives"
 	"math"
 	"math/rand"
-	"time"
 )
 
 const (
 	nx = 800
 	ny = 400
-	numSamples = 100
+	numSamples = 10
 	c = 255.99
 )
 
@@ -89,37 +87,40 @@ func render(world *primitives.World, camera *primitives.Camera) {
 	f := createFile()
 	defer f.Close()
 
-	ticker := time.NewTicker(time.Millisecond * 100)
+	ch := make(chan int)
+	defer close(ch)
+
 	go func() {
 		for {
-			<-ticker.C
-			fmt.Print(".")
+			if j, rendering := <-ch; rendering {
+				percentComplete := float64(j) / float64(ny) * 100.0
+				fmt.Printf("\rRendering: %.2f%%", percentComplete)
+			}
 		}
 	}()
 
-	start := time.Now()
-
+	row := 1
 	for j := ny - 1; j >= 0; j-- {
+		ch <- row
+		row++
+
 		for i := 0; i < nx; i++ {
 			rgb := sample(world, camera, i, j)
 			writePixel(f, rgb)
 		}
 	}
-
-	ticker.Stop()
-	fmt.Printf("\nDone.\nElapsed: %v\n", time.Since(start))
 }
 
 func main() {
-	camera := primitives.NewCamera()
+	camera := primitives.NewCamera(primitives.Vector{0, 1, 2}, primitives.Vector{0, 0, 0}, 75.0, float64(nx) / float64(ny), 0.01)
 
-	sphere := primitives.Sphere{Center: primitives.Vector{0, 0, -1}, Radius: 0.5, Material: primitives.Lambertian{primitives.Vector{0.8, 0.3, 0.3}}}
-	floor := primitives.Sphere{Center: primitives.Vector{0, -100.5, -1}, Radius: 100, Material: primitives.Lambertian{primitives.Vector{0.8, 0.8, 0.0}}}
-	left := primitives.Sphere{Center: primitives.Vector{-1, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.8, 0.8}, 0.0}}
-	right := primitives.Sphere{Center: primitives.Vector{1, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.6, 0.2}, 0.3}}
+	floor := primitives.Sphere{Center: primitives.Vector{0, -250.5, 0}, Radius: 250, Material: primitives.Lambertian{primitives.Vector{0.3, 0.3, 0.3}}}
+	left := primitives.Sphere{Center: primitives.Vector{-1, 0, 0}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.8, 0.8}, 0.0}}
+	right := primitives.Sphere{Center: primitives.Vector{1, 0, 0}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.6, 0.2}, 0.0}}
+	center := primitives.Sphere{Center: primitives.Vector{0, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.1, 0.1, 0.1}, 0.0}}
 
 	world := primitives.World{}
-	world.Add(&sphere)
+	world.Add(&center)
 	world.Add(&floor)
 	world.Add(&left)
 	world.Add(&right)

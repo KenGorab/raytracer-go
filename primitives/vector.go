@@ -33,6 +33,14 @@ func (v Vector) Dot(other Vector) float64 {
 	return v.X * other.X + v.Y * other.Y + v.Z * other.Z
 }
 
+func (v Vector) Cross(u Vector) Vector {
+	return Vector{
+		v.Y * u.Z - v.Z * u.Y,
+		v.Z * u.X - v.X * u.Z,
+		v.X * u.Y - v.Y * u.X,
+	}
+}
+
 func (v Vector) Normalize() Vector {
 	return v.DivideScalar(v.Length())
 }
