@@ -21,6 +21,13 @@ func VectorInUnitSphere() Vector {
 	}
 }
 
+func (v Vector) AsRGB() (int, int, int) {
+	r := int(255 * math.Sqrt(v.X))
+	g := int(255 * math.Sqrt(v.Y))
+	b := int(255 * math.Sqrt(v.Z))
+	return r, g, b
+}
+
 func (v Vector) Length() float64 {
 	return math.Sqrt(math.Pow(v.X, 2) + math.Pow(v.Y, 2) + math.Pow(v.Z, 2))
 }
