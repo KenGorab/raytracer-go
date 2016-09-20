@@ -2,3 +2,7 @@
 rayz
 rayz.iml
 *.ppm
+
+# Ignore all vendored packages, but not vendor.json (running `govendor sync` fetches packages listed there)
+vendor/*
+!vendor/vendor.json

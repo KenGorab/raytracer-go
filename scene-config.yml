@@ -1,0 +1,54 @@
+width: 1920
+height: 1080
+samples: 500
+
+camera:
+  position: [0, 1, 2]
+  target: [0, 0, 0]
+  field-of-view: 75
+  aperture: 0.01
+
+materials:
+  - name: floor
+    type: lambertian
+    color: "#4c4c4c"
+
+  - name: silver
+    type: metal
+    color: "#cccccc"
+    fuzz: 0.0
+
+  - name: gold
+    type: metal
+    color: "#cc9933"
+    fuzz: 0.0
+
+  - name: obsidian
+    type: metal
+    color: "#191919"
+    fuzz: 0.0
+
+objects:
+  - name: floor
+    shape: sphere
+    radius: 250
+    origin: [0, -250.5, 0]
+    material: floor
+
+  - name: left
+    shape: sphere
+    radius: 0.5
+    origin: [-1, 0, 0]
+    material: silver
+
+  - name: right
+    shape: sphere
+    radius: 0.5
+    origin: [1, 0, 0]
+    material: gold
+
+  - name: center
+    shape: sphere
+    radius: 0.5
+    origin: [0, 0, -1]
+    material: obsidian

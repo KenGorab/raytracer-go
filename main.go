@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"os"
 	"kenrg.co/rayz/primitives"
+	"kenrg.co/rayz/parser"
+	"io/ioutil"
 	"kenrg.co/rayz/renderer"
-)
-
-const (
-	nx = 800
-	ny = 400
-	numSamples = 10
 )
 
 func check(e error, s string) {
@@ -20,11 +16,11 @@ func check(e error, s string) {
 	}
 }
 
-func createFile() *os.File {
+func createFile(width, height int) *os.File {
 	f, err := os.Create("out.ppm")
 	check(err, "Error opening file: %v\n")
 
-	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", nx, ny)
+	_, err = fmt.Fprintf(f, "P3\n%d %d\n255\n", width, height)
 	check(err, "Error writing to file: %v\n")
 	return f
 }
@@ -36,28 +32,37 @@ func writePixel(f *os.File, pixel primitives.Vector) {
 	check(err, "Error writing point to file: %v\n")
 }
 
-func main() {
-	f := createFile()
+func renderScene(camera primitives.Camera, world primitives.World, width, height, numSamples int) {
+	f := createFile(width, height)
 	defer f.Close()
 
-	camera := primitives.NewCamera(primitives.Vector{0, 1, 2}, primitives.Vector{0, 0, 0}, 75.0, float64(nx) / float64(ny), 0.01)
-
-	floor := primitives.Sphere{Center: primitives.Vector{0, -250.5, 0}, Radius: 250, Material: primitives.Lambertian{primitives.Vector{0.3, 0.3, 0.3}}}
-	left := primitives.Sphere{Center: primitives.Vector{-1, 0, 0}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.8, 0.8}, 0.0}}
-	right := primitives.Sphere{Center: primitives.Vector{1, 0, 0}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.8, 0.6, 0.2}, 0.0}}
-	center := primitives.Sphere{Center: primitives.Vector{0, 0, -1}, Radius: 0.5, Material: primitives.Metal{primitives.Vector{0.1, 0.1, 0.1}, 0.0}}
-
-	world := primitives.World{}
-	world.Add(&center)
-	world.Add(&floor)
-	world.Add(&left)
-	world.Add(&right)
-
 	renderer := renderer.Renderer{World: world, Camera: camera}
-
-	pixels := renderer.Render(nx, ny, numSamples)
+	pixels := renderer.Render(width, height, numSamples)
 
 	for _, pixel := range pixels {
 		writePixel(f, pixel)
+	}
+}
+
+func main() {
+	arg := os.Args[1:][0]
+	switch arg {
+	case "-h":
+		fmt.Println("Help")
+		os.Exit(0)
+	default:
+		bytes, err := ioutil.ReadFile(arg)
+		check(err, "Error opening scene file: %v\n")
+
+		sceneConfig := parser.ReadConfigFromFile(bytes)
+
+		camera := sceneConfig.CameraFromSceneConfig()
+		world, err := sceneConfig.WorldFromSceneConfig()
+		if err != nil {
+			fmt.Printf("Error parsing input file:\n    %v\n", err)
+			os.Exit(1)
+		}
+
+		renderScene(camera, world, sceneConfig.Width, sceneConfig.Height, sceneConfig.Samples)
 	}
 }
