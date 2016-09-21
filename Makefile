@@ -1,7 +1,7 @@
 default: rayz
 
 rayz: deps
-	go build
+	go build -o rayz
 
 .PHONY: clean deps
 

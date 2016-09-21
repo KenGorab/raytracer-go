@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"kenrg.co/rayz/primitives"
+	"github.com/kengorab/raytracer-go/primitives"
 	"math/rand"
 	"math"
 	"fmt"

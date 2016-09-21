@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"kenrg.co/rayz/primitives"
-	"kenrg.co/rayz/parser"
 	"io/ioutil"
-	"kenrg.co/rayz/renderer"
+	"github.com/kengorab/raytracer-go/primitives"
+	"github.com/kengorab/raytracer-go/parser"
+	"github.com/kengorab/raytracer-go/renderer"
 )
 
 func check(e error, s string) {

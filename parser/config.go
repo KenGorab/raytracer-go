@@ -2,7 +2,7 @@ package parser
 
 import (
 	"gopkg.in/yaml.v2"
-	"kenrg.co/rayz/primitives"
+	"github.com/kengorab/raytracer-go/primitives"
 	"strings"
 	"errors"
 	"fmt"
