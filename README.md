@@ -115,4 +115,4 @@ objects:
 
 The above scene definition generated the following rendered image:
 
-![render](http://i.imgur.com/CknG1e3.png)
+![render](https://raw.githubusercontent.com/KenGorab/raytracer-go/master/examples/three-metal-balls/out.png)
