@@ -3,6 +3,7 @@
 This project began as a way to learn more about ray tracing/computer graphics, and there are (obviously) a number of
 things that could (and should) be done to improve it. Some improvements are, in no particular order:
 
+  - Add tests
   - Providing an output path for generated image
     - Should this be in the scene config, or maybe as a flag/argument?
   - Other image formats (only supports [PPM](https://en.wikipedia.org/wiki/Netpbm_format) images for now)
