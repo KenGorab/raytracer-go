@@ -2,6 +2,7 @@
 Simple raytracer written in Go, for fun and learning
 
 ![render](https://raw.githubusercontent.com/KenGorab/raytracer-go/master/examples/three-metal-balls/out.png)
+
 Generated using this ray tracer
 
 ## Building from source & running
