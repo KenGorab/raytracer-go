@@ -1,6 +1,9 @@
 # Rayz
 Simple raytracer written in Go, for fun and learning
 
+![render](https://raw.githubusercontent.com/KenGorab/raytracer-go/master/examples/three-metal-balls/out.png)
+Generated using this ray tracer
+
 ## Building from source & running
 You'll need:
 
@@ -113,6 +116,6 @@ objects:
     material: obsidian
 ```
 
-The above scene definition generated the following rendered image:
+The above scene definition generated the following rendered image (the same one as at the top of this document):
 
 ![render](https://raw.githubusercontent.com/KenGorab/raytracer-go/master/examples/three-metal-balls/out.png)
