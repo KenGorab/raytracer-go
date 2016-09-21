@@ -1,5 +1,5 @@
-width: 1920
-height: 1080
+width: 800
+height: 400
 samples: 500
 
 camera:
@@ -16,12 +16,12 @@ materials:
   - name: silver
     type: metal
     color: "#cccccc"
-    fuzz: 0.0
+    fuzz: 1.0
 
   - name: gold
     type: metal
     color: "#cc9933"
-    fuzz: 0.0
+    fuzz: 0.5
 
   - name: obsidian
     type: metal
